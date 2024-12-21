@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+    <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\CharityHub.Application\CharityHub.Application.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\CharityHub.Infrastructure\CharityHub.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\CharityHub.Logger\CharityHub.Logger.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\CharityHub.Presentation\CharityHub.Presentation.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\CharityHub.Presistence\CharityHub.DomainService.csproj" />
+  </ItemGroup>
+
+</Project>
