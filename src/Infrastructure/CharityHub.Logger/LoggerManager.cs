@@ -1,4 +1,4 @@
-﻿using CharityHub.Application.Abstracts.Logger;
+﻿using CharityHub.DomainService.Abstractions.Logger;
 using NLog;
 
 namespace CharityHub.Logger

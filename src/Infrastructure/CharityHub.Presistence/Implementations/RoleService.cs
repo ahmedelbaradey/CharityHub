@@ -3,6 +3,7 @@ using CharityHub.DomainService.Abstractions.Repository;
 using CharityHub.Domain.Entities.Identities;
 using CharityHub.DomainService.Abstractions.Logger;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace CharityHub.DomainService.Implementations
 {
@@ -21,39 +22,27 @@ namespace CharityHub.DomainService.Implementations
             _logger = logger;
             _roleRepository = roleRepository;
         }
+
+
+
+
         #endregion
 
         #region Handle Functions
 
-
-        public async Task<bool> CreateRoleAsync(Role role)
+        public async Task<Role> GetRoleByNameAsync(string roleName)
         {
-            try
-            {
-                var result = await _roleRepository.AddAsync(role);
-                if (result == null)
-                    return false;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug("Error in CreateRoleAsync");
-                throw;
-            }
-
+            if(!await CheckIfItExists(roleName))
+                throw new ArgumentNullException(nameof(roleName));
+            return await _roleRepository.FindByCondition(c=>c.Name.Equals(roleName),trackChanges:false).FirstOrDefaultAsync();  
         }
 
-        public async Task<IReadOnlyList<Role>> GetAccountRolesAsync(int accountId)
+        public async Task<bool> CheckIfItExists(string roleName)
         {
-            try
-            {
-                return await _roleRepository.FindByCondition(c => c.AccountRoles.Any(x => x.AccountId.Equals(accountId)), trackChanges:false).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug("Error in CreateAccountRoleAsync");
-                throw;
-            }
+            var role = await _roleRepository.FindByCondition(c => c.Name.Equals(roleName), trackChanges: false).FirstOrDefaultAsync();
+          if(role is null)
+                return false;
+          return true;
         }
         #endregion
     }

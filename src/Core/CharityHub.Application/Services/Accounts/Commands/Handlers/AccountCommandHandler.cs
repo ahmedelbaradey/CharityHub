@@ -2,24 +2,29 @@
 using CharityHub.Application.Base;
 using CharityHub.Application.Services.Accounts.Commands.Models;
 using CharityHub.Domain.Entities.Identities;
-using MediatR;
-using Microsoft.AspNetCore.Identity;
+using CharityHub.DomainService.Abstractions.Logger;
+using CharityHub.DomainService.Abstractions.Services;
 
 namespace CharityHub.Application.Services.Accounts.Commands.Handlers
 {
-    public class AccountCommandHandler : BaseResponseHandler,
-        IRequestHandler<AddAccountCommand, BaseResponse<string>>,
-        IRequestHandler<EditAccountCommand, BaseResponse<string>>,
-        IRequestHandler<DeleteAccountCommand, BaseResponse<string>>
+    public class AccountCommandHandler : BaseResponseHandler,ICommandHandler<AddAccountCommand, BaseResponse<string>>, ICommandHandler<EditAccountCommand, BaseResponse<string>>
     {
         #region Fields
         private readonly IMapper _mapper;
+        private readonly ILoggerManager _logger;
+        private readonly IAccountService _accountService;
+        private readonly IRoleService _roleService;
+        private readonly IAccountRolesService _accountRolesService;
         #endregion
 
         #region Constructors
-        public AccountCommandHandler(IMapper mapper)
+        public AccountCommandHandler(IMapper mapper,    IAccountService accountService, IRoleService roleService, IAccountRolesService accountRolesService ,ILoggerManager logger)
         {
             _mapper = mapper;
+            _logger = logger;   
+            _accountService = accountService;
+            _roleService = roleService;
+            _accountRolesService = accountRolesService;
         }
         #endregion
 
@@ -30,33 +35,24 @@ namespace CharityHub.Application.Services.Accounts.Commands.Handlers
             try
             {
                 //write this logic if program is needed.
-                var IsUserExistByEmail = await _userManager.FindByEmailAsync(request.Email);
-                if (IsUserExistByEmail != null)
-                    return BadRequest<string>("this email already before used.");
-
-                //write this logic if program is needed.
-                var IsUserExistByUserName = await _userManager.FindByNameAsync(request.UserName);
-                if (IsUserExistByUserName != null) return BadRequest<string>("this username already before used.");
-
+                var IsUserExist = await _accountService.GetAccountByMobileNumber(request.MobileNumber);
+                if (IsUserExist is null)
+                    return BadRequest<string>("this Mobile Number already before used.");
                 var user = _mapper.Map<Account>(request);
-                var result = await _userManager.CreateAsync(user, request.Password);
-                if (!result.Succeeded)
-                {
-                    string errorMessage = "Errors occurred while creating the user: ";
-                    foreach (var error in result.Errors)
-                    {
-                        errorMessage += "\n" + $"{error.Description}";
-                    }
-                    return new BaseResponse<string>(errorMessage);
-                }
+                var result = await _accountService.CreateAccountAsync(user);
+                if (!result)
+                    return BadRequest<string>("Clinic Added Operation is Failed.");
+
 
                 //Add role for this user
-                await _userManager.AddToRoleAsync(user, "user");
+                var viewRole = await _roleService.GetRoleByNameAsync("Viewer");
+                await _accountRolesService.AddToRoleAsync(viewRole,user);
 
-                return Created<string>("User Added Successfully.");
+                return Created<string>("Account Added Successfully.");
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error: in AddAccoutCommand");
                 return ServerError<string>(ex.Message);
             }
         }
@@ -65,57 +61,29 @@ namespace CharityHub.Application.Services.Accounts.Commands.Handlers
         {
             try
             {
-                var oldUser = await _userManager.FindByIdAsync(request.Id.ToString());
+                var oldUser = await _accountService.GetAccountById(request.Id);
                 if (oldUser == null)
                     return NotFound<string>($"User with id: {request.Id} not found!");
 
-                var IsUserExistByEmail = await _userManager.FindByEmailAsync(request.Email);
-                if (IsUserExistByEmail != null && IsUserExistByEmail.Id != request.Id)
-                    return BadRequest<string>("this email already before used.");
+                var IsUserExistl = await _accountService.GetAccountByMobileNumber(request.MobileNumber);
+                if (IsUserExistl != null)
+                    return BadRequest<string>("this Mobile Number already before used.");
 
-                var IsUserExistByUserName = await _userManager.FindByNameAsync(request.UserName);
-                if (IsUserExistByUserName != null && IsUserExistByUserName.UserName != request.UserName)
-                    return BadRequest<string>("this username already before used.");
-
-                // استخدم الـ Mapper لتحديث الحقول فقط على الكائن القديم
                 var userMapper = _mapper.Map(request, oldUser);
+                var result = await _accountService.UpdateAccountAsync(userMapper);
+                if (!result)
+                    return BadRequest<string>("Updated Operation Failed.");
 
-                //في الحالة ده هو ببنشالك كائن جديد من user مما يسبب بعض المشاكل 
-                //var UserMapper = _mapper.Map<User>(request);
-
-                var result = await _userManager.UpdateAsync(userMapper);
-                if (!result.Succeeded)
-                    return BadRequest<string>(result.Errors.FirstOrDefault()?.Description);
-
-                return Success("Updated User is Successfully");
+                return Success("Updated Operation Successfully.");
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error: in EditAccoutCommand");
                 return ServerError<string>(ex.Message);
             }
         }
 
-        public async Task<BaseResponse<string>> Handle(DeleteAccountCommand request, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var user = await _userManager.FindByIdAsync(request.Id.ToString());
-                if (user == null)
-                    return NotFound<string>($"User with Id: {request.Id} not found!");
-
-                var result = await _userManager.DeleteAsync(user);
-                if (!result.Succeeded)
-                    return BadRequest<string>("Deleted Operation Failed.");
-
-                return Success("Deleted Operation Successfully.");
-            }
-            catch (Exception ex)
-            {
-                return ServerError<string>(ex.Message);
-            }
-        }
-
-      
+   
         #endregion
 
 

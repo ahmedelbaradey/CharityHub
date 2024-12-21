@@ -26,11 +26,11 @@ namespace CharityHub.DomainService.Implementations
         #region Handle Functions
 
 
-        public async Task<bool> CreateAccountRoleAsync(AccountRole accountRole)
+        public async Task<bool> AddToRoleAsync(Role role, Account account)
         {
             try
             {
-                var result = await _accountRoleRepository.AddAsync(accountRole);
+                var result = await _accountRoleRepository.AddAsync(new AccountRole { AccountId=account.Id,RoleId=role.Id});
                 if (result == null)
                     return false;
                 return true;

@@ -3,30 +3,27 @@ using CharityHub.Application.Base;
 using CharityHub.Application.Services.Accounts.Queries.Models;
 using CharityHub.Application.Services.Accounts.Queries.Responses;
 using CharityHub.Application.Wappers;
-using CharityHub.Domain.Entities.Identities;
+using CharityHub.DomainService.Abstractions.Logger;
+using CharityHub.DomainService.Abstractions.Services;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CharityHub.Application.Services.Accounts.Queries.Handlers
 {
-    public class AccountQueryHandler : BaseResponseHandler,
-        IRequestHandler<GetAccountPaginatedListQuery, PaginatedResult<GetAccountPaginatedListResponse>>,
-        IRequestHandler<GetUserByIdQuery, BaseResponse<GetAccountByIdResponse>>
+    public class AccountQueryHandler : BaseResponseHandler,IRequestHandler<GetAccountPaginatedListQuery, PaginatedResult<GetAccountPaginatedListResponse>>,IRequestHandler<GetUserByIdQuery, BaseResponse<GetAccountByIdResponse>>
     {
         #region Fields
-        private readonly ILogger<AccountQueryHandler> _logger;
+        private readonly ILoggerManager _logger;
         private readonly IMapper _mapper;
-        private readonly UserManager<Account> _userManager;
+        private readonly IAccountService _accountService;
         #endregion
 
         #region Constructors
-        public AccountQueryHandler(ILogger<AccountQueryHandler> logger, IMapper mapper, UserManager<Account> userManager)
+        public AccountQueryHandler(ILoggerManager logger, IMapper mapper, IAccountService accountService)
         {
             _logger = logger;
             _mapper = mapper;
-            _userManager = userManager;
+            _accountService = accountService;
         }
         #endregion
 
@@ -35,7 +32,7 @@ namespace CharityHub.Application.Services.Accounts.Queries.Handlers
         {
             try
             {
-                var users = _userManager.Users.AsQueryable();
+                var users =  _accountService.GetAllAccounts();
                 if (!users.Any())
                 {
                     return new PaginatedResult<GetAccountPaginatedListResponse>(new());
@@ -48,7 +45,7 @@ namespace CharityHub.Application.Services.Accounts.Queries.Handlers
             }
             catch (Exception ex)
             {
-                _logger.LogDebug(ex, "Error in GetUserPaginatedListQuery");
+                _logger.LogDebug("Error in GetUserPaginatedListQuery");
                 throw;
             }
         }
@@ -57,16 +54,16 @@ namespace CharityHub.Application.Services.Accounts.Queries.Handlers
         {
             try
             {
-                var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == request.Id);
+                var user = await _accountService.GetAccountById(request.Id);
                 if (user == null)
-                    return NotFound<GetAccountByIdResponse>($"User with Id: {request.Id} not found!");
+                    return NotFound<GetAccountByIdResponse>($"Account with Id: {request.Id} not found!");
 
                 var usermapper = _mapper.Map<GetAccountByIdResponse>(user);
                 return Success(usermapper);
             }
             catch (Exception ex)
             {
-
+                _logger.LogDebug("Error in GetAccountPaginatedListQuery");
                 return ServerError<GetAccountByIdResponse>(ex.Message);
             }
         }

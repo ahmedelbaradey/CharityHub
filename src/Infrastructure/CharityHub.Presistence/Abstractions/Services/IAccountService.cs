@@ -7,5 +7,8 @@ namespace CharityHub.DomainService.Abstractions.Services
     {
        Task<Account> GetAccountById(int accountId);
         Task<Account> GetAccountByMobileNumber(string mobileNumber);
+        Task<bool> CreateAccountAsync(Account account);
+        Task<bool> UpdateAccountAsync(Account account);
+        IQueryable<Account> GetAllAccounts();
     }
 }

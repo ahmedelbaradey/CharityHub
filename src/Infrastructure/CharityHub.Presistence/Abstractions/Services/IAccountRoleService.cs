@@ -7,7 +7,7 @@ namespace CharityHub.DomainService.Abstractions.Services
     {
         public Task<IReadOnlyList<AccountRole>> GetAccountRolesAsync(int accountId);
 
-        public Task<bool> CreateAccountRoleAsync(AccountRole accountRole);
+        public Task<bool> AddToRoleAsync(Role role,Account account);
 
 
     }

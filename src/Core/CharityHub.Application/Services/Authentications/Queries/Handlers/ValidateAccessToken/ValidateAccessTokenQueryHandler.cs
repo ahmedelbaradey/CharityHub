@@ -1,5 +1,5 @@
 ﻿using CharityHub.Application.Base;
-using CharityHub.Application.Abstracts.Logger;
+using CharityHub.DomainService.Abstractions.Logger;
 using CharityHub.DomainService.Abstractions.Services;
 
 namespace CharityHub.Application.Services.Authentications.Queries.Handlers.ValidateAccessToken
@@ -7,14 +7,14 @@ namespace CharityHub.Application.Services.Authentications.Queries.Handlers.Valid
     public class ValidateAccessTokenQueryHandler : BaseResponseHandler, IQueryHandler<AccessTokenQuery, BaseResponse<string>>
     {
         #region Fields
-        private readonly IAuthenticationService _cusAuthenticationService;
+        private readonly IAuthenticationService _authenticationService;
         private readonly ILoggerManager _logger;
         #endregion
 
         #region Constructors
-        public ValidateAccessTokenQueryHandler(IAuthenticationService cusAuthenticationService, ILoggerManager logger)
+        public ValidateAccessTokenQueryHandler(IAuthenticationService authenticationService, ILoggerManager logger)
         {
-            _cusAuthenticationService = cusAuthenticationService;
+            _authenticationService = authenticationService;
             _logger = logger;
         }
         #endregion
@@ -24,7 +24,7 @@ namespace CharityHub.Application.Services.Authentications.Queries.Handlers.Valid
         {
             try
             {
-                var result = await _cusAuthenticationService.ValidateToken(request.Accesstoken);
+                var result = await _authenticationService.ValidateToken(request.Accesstoken);
                 if (result == "NotExpired")
                 {
                     return Success("this token is not expired.");
@@ -34,7 +34,7 @@ namespace CharityHub.Application.Services.Authentications.Queries.Handlers.Valid
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error: in AddAppointmentCommand");
+                _logger.LogError(ex, "Error: in ValidateAccessTokenQuery");
                 return ServerError<string>(ex.Message);
             }
         }

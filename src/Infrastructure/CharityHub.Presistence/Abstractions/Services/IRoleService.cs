@@ -6,6 +6,7 @@ namespace CharityHub.DomainService.Abstractions.Services
 {
     public interface IRoleService 
     {
-
+        Task<Role> GetRoleByNameAsync(string roleName);
+       
     }
 }

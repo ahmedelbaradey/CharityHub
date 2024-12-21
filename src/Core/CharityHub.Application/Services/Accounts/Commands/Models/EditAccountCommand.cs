@@ -4,7 +4,7 @@ using MediatR;
 
 namespace CharityHub.Application.Services.Accounts.Commands.Models
 {
-    public class EditAccountCommand : IRequest<BaseResponse<string>>
+    public record EditAccountCommand : ICommand<BaseResponse<string>>
     {
         public int Id { get; set; }
         public string MobileNumber { get; set; }

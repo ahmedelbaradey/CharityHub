@@ -7,6 +7,5 @@ namespace CharityHub.Application.Services.Accounts.Queries.Models
     public class GetUserByIdQuery : IRequest<BaseResponse<GetAccountByIdResponse>>
     {
         public int Id { get; set; }
- 
     }
 }

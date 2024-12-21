@@ -4,11 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System;
-using CharityHub.Application.Abstracts.Logger;
+using CharityHub.DomainService.Abstractions.Logger;
+
 
 namespace CharityHub.Application.MiddleWare
 {

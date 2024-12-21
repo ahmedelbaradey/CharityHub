@@ -11,5 +11,6 @@ namespace CharityHub.DomainService.Abstractions.Services
         public Task<(string, DateTime?)> ValidateDetails(JwtSecurityToken jwtToken, string accessToken, string refreshTken);
         public Task<JwtAuthResponse> GetRefreshToken(Account user, JwtSecurityToken jwtToken, DateTime? expiryDate, string refreshToken);
         public Task<string> ValidateToken(string accessToken);
+        public Task<bool> SignIn(string mobileNumber, string tOTP);
     }
 }

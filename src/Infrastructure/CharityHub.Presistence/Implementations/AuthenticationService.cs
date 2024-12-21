@@ -3,6 +3,7 @@ using CharityHub.Domain.Helpers;
 using CharityHub.DomainService.Abstractions.Logger;
 using CharityHub.DomainService.Abstractions.Repository;
 using CharityHub.DomainService.Abstractions.Services;
+using CustomerRegisterationFlow.Infrastructure.OTP;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -20,18 +21,20 @@ namespace CharityHub.DomainService.Implementations
         private readonly JwtSettings _jwtSettings;
         private readonly IGenericRepository<Device> _deviceRepository;
         private readonly IGenericRepository<Role> _roleRepository;
+        private readonly IGenericRepository<Account> _accountRepository;
         private readonly ILoggerManager _logger;
 
         #endregion
 
         #region Constructors
 
-        public AuthenticationService(JwtSettings jwtSettings, IGenericRepository<Device> deviceRepository,ILoggerManager logger, IGenericRepository<Role> roleRepository)
+        public AuthenticationService(JwtSettings jwtSettings, IGenericRepository<Device> deviceRepository,ILoggerManager logger, IGenericRepository<Role> roleRepository, IGenericRepository<Account> accountRepository)
         {       
             _jwtSettings = jwtSettings;
             _deviceRepository = deviceRepository;
             _logger = logger;
             _roleRepository = roleRepository;   
+            _accountRepository = accountRepository; 
         }
 
         #endregion
@@ -73,6 +76,19 @@ namespace CharityHub.DomainService.Implementations
             catch (Exception ex)
             {
                 _logger.LogDebug( "Error in GetJwtToken");
+                throw;
+            }
+        }
+
+        public async Task<bool> SignIn(string mobileNumber, string tOTP)
+        {
+            try
+            {
+                return TOTP.ValidateTOTP(tOTP);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug("Error in GetJwtToken");
                 throw;
             }
         }

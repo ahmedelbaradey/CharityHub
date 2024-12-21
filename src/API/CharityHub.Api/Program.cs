@@ -1,6 +1,5 @@
 using CharityHub.Application.MiddleWare;
 using CharityHub.Infrastructure;
-using CharityHub.Identity;
 using CharityHub.Logger;
 using API.Extensions;
 using NLog;
@@ -21,8 +20,8 @@ builder.Services
     .AddLoggerServices(builder.Configuration)
     .AddApplicationModuleDependencies()
     .AddInfrastructureService(builder.Configuration).AddInfrastructureModuleDependencies(builder.Configuration)
-    .AddIdentityService(builder.Configuration)
-    .AddIdentityModuleDependencies()
+ //   .AddIdentityService(builder.Configuration)
+   // .AddIdentityModuleDependencies()
     .AddDomainServiceModuleDependencies();
 builder.Services.ConfigureVersioning();
 builder.Services.Configure<ApiBehaviorOptions>(options => { options.SuppressModelStateInvalidFilter = true; });
